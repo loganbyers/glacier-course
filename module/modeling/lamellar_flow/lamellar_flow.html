@@ -1,0 +1,520 @@
+<!doctype html>
+<!-- Copyright 2014 Logan Byers-->
+<html>
+  <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="chrome=1">
+  <title>2D Lamellar Flow</title>
+  <link rel="stylesheet" href="../../../stylesheets/styles.css">
+  <link rel="stylesheet" href="../../../stylesheets/pygment_trac.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+  <!--[if lt IE 9]>
+  <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+  <![endif]-->
+  <!--MATHJAX-->
+  <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+  </head>
+  
+  <body>
+  <div class="wrapper">
+    <header>
+      <p><u><a href="../../modules_list.html"><strong>List of Modules</strong></a></u></p>
+      <h3>2-D Lamellar Flow</h3>
+        <p>
+          Create a model of lamellar flow for a 2-dimensional, width-averaged, flowline of an isothermal glacier or ice sheet. 
+          Calculations are discretized and automated, making this a simple model to begin the descent into numerical ice sheet modeling.
+          Validation of the model implementation is performed through comparisons to analytical solutions for very simple geometries.
+          Comparisons can also be made against modern ice sheets.
+        </p>
+      <h3>Learning Outcomes</h3>
+        <p>
+          <strong>Math and Physics: </strong>Write a program for a discrete time-evolving 2-D numerical model of an ice sheet or glacier.
+        </p>
+        <p>
+          <strong>Glaciology: </strong>Gain an understanding of the rate of ice sheet growth and collapse.
+          Discover what effects the bed has on the profile of an ice sheet.
+        </p>
+        <p>
+          <strong>Scientific Method: </strong>Generate a hypothesis, and perform an experiment with the model. Vary parameters.
+        </p>
+      <h3>Prerequisites</h3>
+          <p>None</p>
+    </header>
+    
+    <section>
+      <h1><a name="motivation" class="anchor" href="#motivation"><span class="octicon octicon-link"></span></a>Motivation</h1>
+        <p>
+          A significant achievement in the scope of glaciology was Nye's (1952) application of Glen's (1952) isotropic relation between stress and strain of polycrystalline ice.
+          The model is versatile, as it can explain glacier behavior in both map and cross sectional views.
+          Because it sparked the modern age of glaciology, every glaciologist should probably construct and use it at least once.
+          Therefore, the topic for the first introduction to glacier modeling is an obvious choice.
+          An understanding of numerical methods and the ability to intelligently solve problems with a computer are important tools in the twenty-first century, regardless of the field of study.
+          The simplicity of Nye's lamellar flow model leads to a algorithm that is easy to implement and perform for a discretized 2-D glacier.
+        </p>
+      <h1><a name="reading_list" class="anchor" href="#reading_list"><span class="octicon octicon-link"></span></a>Reading List</h1>
+        <h3><a name="required_reading" class="anchor" href="#required_reading"><span class="octicon octicon-link"></span></a>Required</h3>
+          <p>
+            <ul>
+              <li><strong>Nye, JF</strong> (1952), The Mechanics of Glacier Flow, <i>Journal of Glaciology</i>, 2, 12, 82-93</li>
+            </ul>
+          </p>
+        <h3><a name="suggested_reading" class="anchor" href="#suggested_reading"><span class="octicon octicon-link"></span></a>Suggested</h3>
+          <p>
+            This content expands upon the work in Cuffey and Patterson's (2010) 
+            <strong><a href="http://store.elsevier.com/The-Physics-of-Glaciers/Kurt-Cuffey/isbn-9780123694614">The Physics of Glaciers</a></strong>
+            and van der Veen's (2013) <strong><a href="http://www.crcpress.com/product/isbn/9781439835661">Fundamentals of Glacier Dynamics</a></strong>.
+          </p>
+          <table> <!--Reading List-->
+            <tr>
+              <th>Source</th>
+              <th>Content</th>
+              <th>Location</th>
+            </tr>
+            <tr>
+              <td><strong>The Physics of Glaciers</strong></td>
+              <td>Force Balance and Continuity</td>
+              <td>8.5, 8.5.5.1</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td>Diffusive Waves</td>
+              <td>11.3</td>
+            </tr>
+            <tr>
+              <td><strong>Fundamentals of Glacier Dynamics</strong></td>
+              <td>Modeling Glacier Flow</td>
+              <td>Chapter 4</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td>Lamellar Flow</td>
+              <td>4.2</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td>Continuity, Vialov Profile</td>
+              <td>5.2, 5.3</td>
+            </tr>
+            <tr>
+              <td></td>
+              <td>Halfar and Bueler Similarity Solutions</td>
+              <td>10.3</td>
+            </tr>      
+          </table>
+          <p>
+            For strong mathematical derivations, Hutter's (1983) 
+            <strong><a href="http://www.springer.com/earth+sciences+and+geography/hydrogeology/book/978-90-277-1473-2">Theoretical glaciology</a></strong>
+            and Greeve and Blatter's (2009) 
+            <strong><a href="http://www.springer.com/earth+sciences+and+geography/geophysics/book/978-3-642-03414-5">Dynamics of Ice Sheets and Glaciers</a></strong> 
+            are very comprehensive references.
+          </p>
+        
+      <h1><a name="task_list" class="anchor" href="#task_list"><span class="octicon octicon-link"></span></a>List of Tasks</h1>
+        <ol type="A">
+          <li>Read the recommended literature, the section on theory, and the section on the numerical implementation</li>
+          <li>In a chosen programming language, write a script that can solve the time-evolution of the thickness of a glacier</li>
+          <li>Observe the numerical model under growth conditions leading to the Vialov profile</li>
+          <li>Plot geometry as function of time and surface mass balance</li>
+          <li>Compare plots of 'steady state' geometries to those Vialov profiles</li>
+          <li>Model ice sheet relaxation conditions under zero surface mass balance </li>
+          <li>Generate a hypothesis concerning glacier behavior under the model</li>
+          <li>Write a small report on the testing and results of the hypothesis</li>
+        </ol>
+
+      
+  <h1><a name="symbol_list" class="anchor" href="#symbol_list"><span class="octicon octicon-link"></span></a>List of Symbols</h1>
+    <table> <!--Symbol List-->
+      <tr>
+        <th>Symbol</th>
+        <th>Description</th>
+      </tr>
+      <tr>
+        <td>\( \# \)</td>
+        <td>vector or grid index</td>
+      </tr>
+      <tr>
+        <td>\( \#' \)</td>
+        <td>vector or grid index for 'off-grid' point</td>
+      </tr>
+      <tr>
+        <td>\( A \)</td>
+        <td>rate prefactor</td>
+      </tr>
+      <tr>
+        <td>\( A_0 \)</td>
+        <td>rheology-dependent constant</td>
+      </tr>
+      <tr>
+        <td>\( B \)</td>
+        <td>rate prefactor</td>
+      </tr>
+      <tr>
+        <td>\( d \)</td>
+        <td>depth from ice surface</td>
+      </tr>
+      <tr>
+        <td>\( D \)</td>
+        <td>diffusivity equation</td>
+      </tr>
+      <tr>
+        <td>\( g \)</td>
+        <td>acceleration due to gravity</td>
+      </tr>
+      <tr>
+        <td>\( H \)</td>
+        <td>ice thickness</td>
+      </tr>  
+      <tr>
+        <td>\( H_0 \)</td>
+        <td>thickness at ice divide</td>
+      </tr>
+      <tr>
+        <td>\( \hat{H} \)</td>
+        <td>normalized ice thickness \( H/H_0 \)</td>
+      </tr>
+      <tr>
+        <td>\( \tilde{H}_0 \)</td>
+        <td>reference ice divide thickness</td>
+      </tr>
+      <tr>
+        <td>\( L \)</td>
+        <td>horizontal distance from ice divide to ice sheet edge</td>
+      </tr>
+      <tr>
+        <td>\( M \)</td>
+        <td>surface elevation change per time due to surface mass balance</td>
+      </tr>
+      <tr>
+        <td>\( n \)</td>
+        <td>flow law exponent</td>
+      </tr>
+      <tr>
+        <td>\( R \)</td>
+        <td>radius of an axisymmetric ice sheet</td>
+      </tr>    
+      <tr>
+        <td>\( \tilde{R} \)</td>
+        <td>reference radius of an axisymmetric ice sheet</td>
+      </tr>  
+      <tr>
+        <td>\( r \)</td>
+        <td>distance from center of an axisymmetric ice sheet
+      </tr>
+      <tr>
+        <td>\( \hat{r} \)</td>
+        <td>normalized distance from center of an axisymmetric ice sheet \( r/R \) </td>
+      </tr>
+      <tr>
+        <td>\( t \)</td>
+        <td>time</td>
+      </tr>  
+      <tr>
+        <td>\( T \)</td>
+        <td>time-scale for adjustment</td>
+      </tr>  
+      <tr>
+        <td>\( \{u,w,v\} \)</td>
+        <td>velocities parallel to \( \{x,y,z\} \)</td>
+      </tr>  
+      <tr>
+        <td>\( u_0 \)</td>
+        <td>surface velocity</td>
+      </tr>  
+      <tr>
+        <td>\( u_b \)</td>
+        <td>sliding velocity at the bed</td>
+      </tr>  
+      <tr>
+        <td>\( U \)</td>
+        <td>average velocity for a column of ice</td>
+      </tr> 
+      <tr>
+        <td></td>
+        <td></td>
+      </tr>
+      <tr>
+        <td>\( \alpha \)</td>
+        <td>surface slope dip from horizontal</td>
+      </tr>
+      <tr>
+        <td>\( \Delta t \)</td>
+        <td>time step</td>
+      </tr>    
+      <tr>
+        <td>\( \Delta x \)</td>
+        <td>grid spacing</td>
+      </tr>  
+      <tr>
+        <td>\( \lambda \)</td>
+        <td>coefficient for surface mass balance dependent on time and thickness</td>
+      </tr>
+      <tr>
+        <td>\( \phi \)</td>
+        <td>flux of ice passing through vertical column</td>
+      </tr>  
+      <tr>
+        <td>\( \rho \)</td>
+        <td>mass-density of ice</td>
+      </tr>
+      <tr>
+        <td>\( \tau_{bx} \)</td>
+        <td>basal drag</td>
+      </tr>
+      <tr>
+        <td>\( \tau_{dx} \)</td>
+        <td>driving stress</td>
+      </tr>
+    </table>
+    
+  <h1><a name="theory" class="anchor" href="#theory"><span class="octicon octicon-link"></span></a>Theoretical Background</h1>
+    <p>
+      This follows the basic derivation given by Nye (1952).
+      There are two governing principles behind the model of lamellar flow in glaciers and ice sheets.
+      The first is that the only source of drag is interactions at the glacier boundaries, such as that between the ice and the bed or the ice and the lateral walls.
+      This means for a two-dimensional cross-section, the ice is in contact with the bed but the upper surface of the ice is free of drag.
+      The same model can describe the observed transverse velocity gradients that characterize glacier flow in map-view if both sides are bound to the side walls.
+      The model described here is that of a 2-D cross-sectional flowline with no basal sliding (\( u_b\)), meaning basal drag (\(\tau_{bx}\)) is equal in magnitude to the driving stress (\(\tau_{dx}\)).
+      \[ \mbox{ \( \tau_{dx} = \tau_{xz} = \tau_{bx} \) when \( u_b = 0\) } \]
+    </p>
+    <p>
+      The second principle is is the principle of continuity, which states that there is no change in volume through time (accumulation and ablation neglected) and the density (\( \rho \)) does not change.
+      In reality, continuity is based on the the conservation of mass, but because the model presented here concerns a perfectly homogeneous glacier, volume can serve as an appropriate proxy for mass.
+      For any infinitessimal-width vertical column of ice, if the upper surface has a slope that is not directly perpendicular to gravity, 
+        there is a flux imbalance between the ice entering one side, and exiting the other, which is described by \( \phi = H U \), 
+        with \( H \) the height (thickness) of the column, and \( U \) the vertically-averaged velocity for the column.
+      Because of this imbalance, the rate-change of the ice column thickness with time is non-zero, and is the sum of the flux imbalance and the surface mass balance (\(M\)).
+      \[ {\partial H \over \partial t} = -{d \over dx} \phi + M \]
+      In this derivation, the representation of \( U \) is sought to provide closure to the above continuity equation.
+    </p>
+    <p>
+      Consider a simple flowline model of a glacier with coordinates \( x \) oriented downflow and parallel to the surface and \( z \) oriented perpendicular to \( x \) with positive-\( z \) upwards.
+      The shear stress at any depth \( z = d \) in a glacier is given by \( \tau_{xz} = \rho g d \sin{\alpha} \).
+      Using the isotropic Nye-Glen creep relation
+      \[ \dot{\varepsilon} = \left({\tau \over B}\right)^n \]
+      it is possible to calculate the velocity at any depth (\( d \)) as
+      \[ u_d = {C \over n+1} (\sin{\alpha})^n d^{n+1} + u_0 \] 
+      with \( C=\left({-\rho g / B}\right)^n \).
+      Because \( u_b = 0 \), the velocity difference between the surface and bed is simple to calculate.
+      \[ u_0 = {C \over n+1} (\sin{\alpha})^n H^{n+1} \]
+      Integrating the velocity at depth over the full thickness of the ice column gives the flux (\( \phi \)) of ice through the column.
+      \[ \phi = u_b H + {C\over n+2}(\sin{\alpha})^n H^{n+2} \]
+      The average velocity of ice in the column is
+      \[ U = {2 A H \over n+2}{\tau_{dx}}^n. \]
+      This enables the solution to the continuity equation in terms of \( H \),  \( \alpha \), and \( \partial H / \partial t \).
+    </p>
+    
+    <h2><a name="diffusion" class="anchor" href="#diffusion"><span class="octicon octicon-link"></span></a>Diffusive Form of Continuity</h2>  
+      <p>
+        Combining the continuity equations with those for the driving stress and the average velocity of an ice column, it is possible to represent thickness change as a diffusion equation of the form
+        \[ {\partial H \over \partial t} = {\partial \over \partial x} \left( D {\partial h \over \partial x} \right) + M, \]
+        which has a known solution and is therefore useful for the purposes here.
+        This diffusive form also ensures more stable results during the running of the numerical model that is presented below.
+      </p>
+      
+  <h1><a name="numerical_solution" class="anchor" href="#numerical_solution"><span class="octicon octicon-link"></span></a>Numerical Solution</h1>  
+    <p>
+      While a solution is now possible given the continuous solution above the numerical model presented here is discrete, consisting of only a set of points rather than a continuous surface.
+      Continuous models and equations can be computationally consuming, so models are commonly discretized spatially into a set of points and temporally into time-steps.
+      When the members of the spatial set and the temporal set become infinite in number, the continuous solution is at hand, but even a limited number of points can be employed to good effect.
+      In this section the numerical model implementation of the above solution is given, and certain numerical methods are demonstrated to perform better than others.
+      Here a staggered grid is used, a diagram of which is shown below.
+    </p>
+    <img src="staggered_grid_diagram.png" alt="diagram of a staggered grid">
+    <p>
+      For the diagram of a staggered grid, the thin line shows a continuous ice sheet surface.
+      The dark circles show the discretization of the continuous surface into a set of grid points, here labeled 1 through 6.
+      The smaller blue circles show the location of the off-grid points, which are located at the midpoints of a line connecting adjacent grid points.
+      Notice that at the grid points, ice thickness is known and updated during the model run.
+      The off-grid points are one less in number than the grid points, and have their own set of indices.
+    </p>
+      
+    <h2><a name="discretization" class="anchor" href="#discretization"><span class="octicon octicon-link"></span></a>Discretization</h2>
+    <p>
+      A staggered grid is such that there are 'grid points' that contain 'true data' on ice thickness and surface elevation and there are 'off-grid points' that contain interpolated data on ice thickness and surface elevation.
+      The off-grid points can occur anywhere between grid points, though it is most simple to consider evenly spaced grid points at steps \( \Delta x \) with off-grid points located at the midpoint between grid points.
+      The grid points are the data set that is updated every time step.
+      Grid points can be thought of as a 1-dimensional column of ice and odff-grid points are used in consideration of surface slope and can be treated as flux gates, where ice enters and exits the 1-D column of ice represented by the grid points.
+      By considering the flux through off-grid points on either side of a grid point, the flux imbalance can be determined, and the rate of thickness change can be calculated just as in the continuous solution.
+    </p>
+    <p>
+      The model specifications are as follows:
+      This model is composed of \( N \) points evenly distributed in a one-dimensional space oriented parallel to the x-axis.
+      Each point has an associated value for bed elevation (\( b \)) and surface elevation (\( h \)) (or thickness, (\( H \)).
+      The model is time-evolving, with a finite time step \( \Delta t \)  over which the model progresses under only the forcings of a uniform surface mass balance rate \( M \) and internal deformation related to weight and gravity.
+    </p>
+    <h2><a name="algorithm" class="anchor" href="#algorithm"><span class="octicon octicon-link"></span></a>Algorithm</h2>
+    <p>
+      Depending on the programming language, there may be list-like or vector-like objects that would be well-suited for the one-dimensional coordinate system used in the numerical model.
+      The algorithm presented below assumes that vectors are used to store and access the data in an organized way.
+    </p>
+    
+    <p>
+      <ol start="0"> <!-- Algorithm -->
+        <li>
+          Create a vector \( \mathbf{H} \) of length \( N \), which contains real numbers describing the ice thickness in meters, and a vector \( \mathbf{G} \) of length \( N \), which contains real numbers describing the bed elevation at grid-points spaced evenly every \( \Delta x \) meters.
+          \[ \mathbf{H} = \{H_1,H_2,H_3...H_N\} \]
+          \[ \mathbf{G} = \{G_1,G_2,G_3...G_N\} \]
+        </li>
+        <li>
+          For every grid-point, calculate the diffusivity \( D \) and store in a vector \( \mathbf{D} \) of length \( N \). 
+          \[ D_{\#} =  {2 A\over n+2} (\rho g)^n H_{\#}^{n+2} \left | {\partial h \over \partial x}\right | ^{n-1} \]
+        </li>
+        <li>
+          Calculate the flux of ice \( F \) between adjacent gridpoints and store in a vector \( \mathbf{F} \) of length \( N-1 \). 
+          \[ F_{\#'} = {1\over2} (D_{\#} + D_{\#+1}) ({h_{\#+1} - h_{\#} \over \Delta x}) \]
+        </li>
+        <li>
+          Calculate the change in thickness \( C \) of the grid points due to flux imbalance and store in a vector \( \mathbf{C} \) of length \( N \)
+          \[  C_{\#} = {\partial H_{\#} \over \partial t} = {\Delta t \over \Delta x} (F_{\#'} - F_{\#'-1}) \]
+        </li>
+        <li>
+          Update the ice thickness at every grid-point.
+          \[  H_{\#} = H_{\#} + C_{\#} + M \Delta t \]
+        </li>
+        <li>
+          Increment time.
+          \[ t = t + \Delta t \]
+        </li>
+        <li>
+          Loop through steps 1-5 until model end conditions are met.
+        </li>
+      </ol>
+    </p>
+  
+  <h2><a name="parameterization" class="anchor" href="#parameterization"><span class="octicon octicon-link"></span></a>Model Parameterization</h2>
+    <p>Having established the shell of the program, it is necessary to parameterize the model with numerical values for different rate factors, exponents, and dimensions.</p>
+    
+    <h3><a name="rheology" class="anchor" href="#rheology"><span class="octicon octicon-link"></span></a>Ice Rheology</h3>
+      <p>
+        Assuming the flow exponent \( n = 3 \), here is a quick reference to some potential values for the prefactor \( A \) in units of kPa<sup>-3</sup> yr<sup>-1</sup> given by Hooke (1981).
+      </p>
+      <table>
+        <tr>
+          <th>Temperature (C)</th>
+          <th>Prefactor</th>
+        </tr>
+        <tr>
+          <td>0</td>
+          <td>1.15&times;10<sup>-6</sup></td>
+        </tr>
+        <tr>
+          <td>-5</td>
+          <td>4.6&times;10<sup>-8</sup></td>
+        </tr>
+        <tr>
+          <td>-10</td>
+          <td>2.26&times;10<sup>-8</sup></td>
+        </tr>
+        <tr>
+          <td>-25</td>
+          <td>2.5&times;10<sup>-9</sup></td>
+        </tr>
+        <tr>
+          <td>-50</td>
+          <td>3.47&times;10<sup>-11</sup></td>
+        </tr>
+      </table>
+      
+      <h3><a name="dimensions" class="anchor" href="#dimensions"><span class="octicon octicon-link"></span></a>Ice Sheet Dimensions</h3>
+      <p>
+        The maximum width of the modern Antarctic ice sheet is around 4600 km, reaching from coast to coast.
+        The maximum width of the modern Greenland ice sheet in the East-West direction is around 1200 km and in the North-South direction is around 2400 km.
+        The maximum width of the Laurentide ice sheet was probably around 5000 km.
+      </p>
+      <h3><a name="smb" class="anchor" href="#smb"><spansmb class="octicon octicon-link"></span></a>Surface Mass Balance</h3>
+      <p>
+        Though there is clearly spatial heterogeneity in accumulation and ablation rates across both modern ice sheets, some first-order values for average surface mass balance can be given.
+        Modeled Antarctic surface mass balance for the grounded portion of the Antarctic ice sheet is an average of around 18 cm ice-equivalent per year <a href="http://dx.doi.org/10.1029/2011GL050713">(Lenaerts et al, 2012)</a>.
+        Modeled Greenlandic surface mass balance for the Greenland ice sheet is an average of around 30 cm ice-equivalent per year <a href="http://dx.doi.org/10.1029/2009GL038110">(Ettema et al, 2009)</a>.
+      </p>
+    <h2><a name="validation" class="anchor" href="#validation"><span class="octicon octicon-link"></span></a>Model Validation</h2>
+      <p>
+        There are certain parameterizations of the model that have unique analytical solutions.
+        By parameterizing the model to the conditions, the correct implementation of the numerical model can be verified.
+        These analytical solutions, their parameterizations, and ways to modify the general algorithm in compliance are presented here.
+      </p>
+      <h3><a name="vialov" class="anchor" href="#vialov"><span class="octicon octicon-link"></span></a>Vialov Steady-state Solution</h3>
+        <p>
+          The Vialov profile is an analytical solution for the surface profile of an ice sheet with a perfectly horizontal bed subject to a spatially and temporally uniform surface mass balance, and pinned laterally at positions \( x = \pm L \) where the thickness is zero.
+          Under these conditions, there is a steady-state profile defined by Vialov (1958).
+          The continuous function relating ice sheet thickness \( H \), which is equivalent to surface elevation \( h \) for a horizontal bed at elevation 0, at a scalar distance \( x \) from the ice divide to the half-width \( L \) of the ice sheet and the uniform surface mass balance \( M \) is
+          \[ H(x) = \left({2 (n+2)^{1/n} \over \rho g} \left({M \over 2 A}\right)^{1/n} \left(L^{1+1/n} - x^{1+1/n}\right)\right)^{-\left(2+2/n\right)} \]
+        </p>
+        <p>
+          To compare the numerical solution to the analytical solution, the numerical model must be parameterized with a horizontal bed, and be grown from nothing, meaning that at the initialization of the model, the ice thickness is zero.
+          Therefore, in step 0 of the algorithm, set \( H_\# = 0 \), and \( G_\# = 0 \).
+          Because the Vialov profile requires the edges of the model be pinned at zero, after step 4 of the algorithm, ensure that the \( H_1 = H_N = 0 \).
+          Using these simple modifications, and running the model for long periods to approach the steady state, it is possible to compare near-steady state condition in the numerical model to the analytical solution.
+          With regards to plotting the solutions, it is probably best to center the model domain at \( x=0 \), so that the two solutions are horizontally registered.
+        </p>
+      <h3><a name="halfar" class="anchor" href="#vialov"><span class="octicon octicon-link"></span></a>Halfar Ice Sheet Relaxation</h3>
+        <p>
+          While the Vialov profile concerns an ice sheet in steady-state, an understanding of the collapse or relaxation of an ice sheet can also be analytically derived.
+          Given an ice sheet like that described by the Vialov profile, with a horizontal bed, if the surface mass balance is turned to zero and the model domain is increased to allow for lateral expansion, then the ice sheet will be in disequilibrium, and the ice sheet will both decrease thickness at the ice divide and widen.
+          Analytical solutions for the condition of ice sheet collapse under nil surface mass balance are given by Halfar (1983) and Nye (2000) for axisymmetric ice sheets.
+          The basic principle of these analytical solutions is that there is a persistent similarity between ice sheet elevation profiles for any time, and that due to the zero mass balance, the ice sheet has a constant volume.
+          In a way, the solutions hinge on using normalized ice sheet thickness \( \hat{H} = H/H_0 \) and radius  \(\hat{r} = r/R \) to describe the profile, with the time-dependency describing the mapping between normalized parameter and the steady-state solution.
+        </p>
+        <p>
+          For an ice sheet with initial ice divide thickness \( \tilde{H}_0 \) and radius \( \tilde{R} \), the thickness at a time \( t \) after the nullification of surface mass balance is given by
+          \[ H_0 (t) = \tilde{H}_0 \left(1+ {t \over T} \right)^{-2/(5n+3)} \]
+          and the corresponding ice sheet radius is given by
+          \[ R(t) = \tilde{R} \left(1+ {t \over T} \right)^{1/(5n+3)} \]
+          with
+          \[ T = {1 \over (5n+3)A_0}\left({2n+1 \over n+1}\right)^n { \tilde{R}^{n+1} \over \tilde{H}_0^{2n+1}} \]
+          \[ A_0 = {2A\over n+2}(\rho g)^n \]
+        </p>
+       <h3><a name="bueler" class="anchor" href="#bueler"><span class="octicon octicon-link"></span></a>Bueler Thickness-dependent Accumulation</h3>
+        <p>
+          Bueler et al (2005) give an exact, continuous solution for an ice sheet elevation profile under very specific conditions of non-zero surface mass balance.
+          \[ M = {\lambda \over T} H \]
+          with \( \lambda \) a real constant and the starting conditions is not \( t = 0 \), but rather \( t = T \).
+          There are three basic cases for how the choice of \( \lambda \) affects the ice sheet growth or collapse.
+          If \( \lambda = 0 \), then \( M = 0 \), and surface mass balance is nil, which is the condition described in the previous section on the Halfar (1983) solution.
+          If \( \lambda &gt; 0 \), then surface mass balance is positive, and there is accumulation that increases with thickness.
+          If \( \lambda &lt; 0 \), then surface mass balance is negative, and there is ablation that increases with thickness.
+          The reality of the relation between surface mass balance and ice thickness can be questioned, but regardless, the equation for the elevation profiles of ice sheet is
+          \[ H(r,t) = \tilde{H}_0 \left({t \over T}\right)^{-a}\left[1-\left(\left({t\over T}\right)^{-b}{r\over\tilde{R}}\right)^{n/(2n+1)}\right]^{n/(2n+1)} \]
+          with
+          \[ a = {2-(n+1)\lambda \over 5n + 3} \]
+          \[ b = {1+(2n+1) \lambda \over 5n+3} \]
+          The corresponding solution for the thickness at the ice divide can be obtained by setting \( r \rightarrow 0 \)
+          \[ H_0(t) = \tilde{H}_0 \left( {t \over T} \right)^{-a} \]
+          The solution for the ice sheet radius is given by
+          \[ R(t) = \tilde{r} \left( {t\over T} \right)^{b} \]
+        </p>
+  <h1><a name="future" class="anchor" href="#future"><span class="octicon octicon-link"></span></a>Future Work</h1>  
+    <p>
+      Having tested the model on simple geometries, and simple conditions of surface mass balance, exploration into more dynamic and complex conditions is warranted.
+      There are a number of hypotheses to test with this model, which could concern the effect of bed topography or non-uniform surface mass balance on the surface elevation profile.
+      Because the model is time-evolving, the effects of perturbation at one location can be tracked towards remote reaches of the glacier.
+      It is advised that original hypotheses be created and tested through the use of the model.
+    </p>
+  <h1><a name="references" class="anchor" href="#references"><span class="octicon octicon-link"></span></a>References</h1>  
+    <p>
+      <ul>
+        <li><strong>Bueler, E, and 4 others (2005)</strong>, Exact solutions and verification of numerical models for isothermal ice sheets, <u>Journal of Glaciology</u>, 51, 173, 291-306</li>
+        <li><strong>Ettema, J, and 6 others (2009)</strong>, Higher surface mass balance of the Greenland ice sheet revealed by high-resolution climate modeling, <u>Geophysical Research Letters</u>, 36, L12501, <a href="http://dx.doi.org/10.1029/2009GL038110">doi:10.1029/2009GL038110</a></li>
+        <li><strong>Halfar, P (1983)</strong>, On the Dynamics of the Ice Sheets 2, <u>Journal of Geophysical Research</u>, 88, C10, 6043-6051</li>
+        <li><strong>Hooke, RLB (1981)</strong>, Flow Law for Polycrystalline Ice in Glaciers: Comparison of Theoretical Predictions, Laboratory Data, and Field Measurements, <u>Reviews of Geophysics and Space Physics</u>, 19, 4, 664-672</li>
+        <li><strong>Cuffey, KM &amp; Patterson, WSB (2010)</strong>, <u>The Physics of Glaciers</u>, Elsevier, <a href="http://store.elsevier.com/The-Physics-of-Glaciers/Kurt-Cuffey/isbn-9780123694614/">isbn:9780123694614</a></li>
+        <li><strong>Glen, JW (1952)</strong>, Experiments on the Deformation of Ice, <u>Journal of Glaciology</u>, 2, 12, 111-114</li>
+        <li><strong>Lenaerts, JTM, and 4 others (2012)</strong>, A new, high-resolution surface mass balance map of Antarctica (1979-2010) based on regional atmospheric climate modeling, <u>Geophysical Research Letters</u>, 39, L04501, <a href="http://dx.doi.org/10.1029/2011GL050713">doi:10.1029/2011GL050713</a></li>
+        <li><strong>Nye, JF (1952)</strong>, The Mechanics of Glacier Flow, <u>Journal of Glaciology</u>, 2, 12, 82-93</li>
+        <li><strong>Nye, JF (2000)</strong>, A flow model for the polar caps of Mars, <u>Journal of Glaciology</u>, 46, 438-444
+        <li><strong>van der Veen, CJ (2013)</strong>, <u>Fundamentals of Glacier Dynamics</u>, CRC Press, <a href="http://www.crcpress.com/product/isbn/9781439835661">isbn:9781439835661</a></li>
+        <li><strong>Vialov, SS (1958)</strong>, Regularities of glacial shields movement and the theory of plastic viscous flow, <u>International Association of Hydrological Science Publication 47</u>, 266-275</li>
+      </ul>
+    </p>
+</section>
+  
+  
+  
+  <footer> 
+  <p>This project is maintained by <a href="https://github.com/loganbyers">loganbyers</a></p>
+  </footer>
+  </div>
+  
+  <script src="javascripts/scale.fix.js"></script>
+  </body>
+</html>
